@@ -8,7 +8,7 @@ from models.question import Question
 from models.user_skill import UserSkill
 from models.user_skill_attempts import UserSkillAttempt
 from routes.deps import get_current_user
-from schemas.skill import SkillResponse, QuestionResponse, AssessmentSubmit, AttemptHistoryResponse
+from schemas.skill import SkillResponse, QuestionResponse, AssessmentSubmit, AttemptHistoryResponse, PassedSkillResponse
 
 router = APIRouter(prefix="/skills", tags=["Skills"])
 COOLDOWN_HOURS = 24
@@ -112,6 +112,7 @@ def submit_assessment(
     }
 
 
+#get attempt history
 @router.get("/history",response_model=list[AttemptHistoryResponse])
 def get_attempt_history(
     db:Session = Depends(get_db),
@@ -122,3 +123,17 @@ def get_attempt_history(
     ).order_by(UserSkillAttempt.attempted_at.desc()).all()
 
     return attempts
+
+
+#get passed skills
+@router.get("/passed",response_model=list[PassedSkillResponse])
+def get_passed_skills(
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    passed_skills = db.query(UserSkill).filter(
+        UserSkill.user_id == current_user.id,
+        UserSkill.passed == True
+    ).all()
+
+    return passed_skills

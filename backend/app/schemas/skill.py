@@ -36,3 +36,11 @@ class AttemptHistoryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+    
+
+class PassedSkillResponse(BaseModel):
+    skill_id : int
+    score : float
+
+    class Config:
+        from_attributes = True
