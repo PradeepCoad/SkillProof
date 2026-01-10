@@ -6,8 +6,9 @@ from database.pg_db import SessionLocal
 from models.skill import Skill
 from models.question import Question
 from models.user_skill import UserSkill
+from models.user_skill_attempts import UserSkillAttempt
 from routes.deps import get_current_user
-from schemas.skill import SkillResponse, QuestionResponse, AssessmentSubmit
+from schemas.skill import SkillResponse, QuestionResponse, AssessmentSubmit, AttemptHistoryResponse
 
 router = APIRouter(prefix="/skills", tags=["Skills"])
 COOLDOWN_HOURS = 24
@@ -77,6 +78,15 @@ def submit_assessment(
     score = (correct / len(questions)) * 100
     passed = score >= PASS_SCORE
 
+    #Recording attept
+    attempt = UserSkillAttempt(
+        user_id = current_user.id,
+        skill_id = skill_id,
+        score = score,
+        passed = passed
+    )
+    db.add(attempt)
+
     #Best score update
     if recent_attempt:
         if score > recent_attempt.score:
@@ -100,3 +110,15 @@ def submit_assessment(
         "passed": passed,
         "best_score": recent_attempt.score
     }
+
+
+@router.get("/history",response_model=list[AttemptHistoryResponse])
+def get_attempt_history(
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    attempts = db.query(UserSkillAttempt).filter(
+        UserSkillAttempt.user_id == current_user.id
+    ).order_by(UserSkillAttempt.attempted_at.desc()).all()
+
+    return attempts

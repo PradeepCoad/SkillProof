@@ -1,6 +1,9 @@
 from fastapi import FastAPI
+
+
 from routes import auth, user, project, skill
 from database.pg_db import Base, engine
+from models.user_skill_attempts import UserSkillAttempt
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()

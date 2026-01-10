@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import List
 
 class SkillResponse(BaseModel):
@@ -25,3 +26,13 @@ class AnswerSubmit(BaseModel):
 
 class AssessmentSubmit(BaseModel):
     answers: List[AnswerSubmit]
+
+
+class AttemptHistoryResponse(BaseModel):
+    skill_id: int
+    score: float
+    passed: bool
+    attempted_at: datetime
+
+    class Config:
+        from_attributes = True
