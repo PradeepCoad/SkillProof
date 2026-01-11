@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
+from utils.audit_logger import log_action
 from database.pg_db import SessionLocal
 from models.skill import Skill
 from models.question import Question
@@ -104,6 +105,16 @@ def submit_assessment(
         db.add(recent_attempt)
             
     db.commit()
+
+    log_action(
+        db,
+        action="SUBMIT",
+        entity="ASSESSMENT",
+        entity_id=skill_id,
+        user_id=current_user.id,
+        message=f"Assessment submitted | Score: {score}"
+    )
+
 
     return {
         "score": score,

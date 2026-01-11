@@ -5,6 +5,7 @@ from routes import auth, user, project, skill, portfolio, profile
 from database.pg_db import Base, engine
 from models.user_skill_attempts import UserSkillAttempt
 from models.user_profile import UserProfile
+from models.audit_log import AuditLog
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()

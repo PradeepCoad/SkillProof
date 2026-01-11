@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from utils.audit_logger import log_action
 from database.pg_db import SessionLocal
 from models.project import Project
 from routes.deps import get_current_user
@@ -29,6 +30,15 @@ def create_project(
     )
     db.add(new_project)
     db.commit()
+    log_action(
+        db,
+        action="CREATE",
+        entity="PROJECT",
+        entity_id=new_project.id,
+        user_id=current_user.id,
+        message="Project created"
+    )
+
     db.refresh(new_project)
     return new_project
 
@@ -57,6 +67,16 @@ def update_project(
         setattr(db_project, key, value)
 
     db.commit()
+    log_action(
+        db,
+        action="UPDATE",
+        entity="PROJECT",
+        entity_id=db_project.id,
+        user_id=current_user.id,
+        message="Project updated"
+    )
+
+
     db.refresh(db_project)
     return db_project
 
@@ -72,5 +92,14 @@ def delete_project(
         raise HTTPException(status_code=404, detail="Project not found")
 
     db.delete(db_project)
+    log_action(
+        db,
+        action="DELETE",
+        entity="PROJECT",
+        entity_id=project_id,
+        user_id=current_user.id,
+        message="Project deleted"
+    )
+
     db.commit()
     return {"msg": "Project deleted successfully"}

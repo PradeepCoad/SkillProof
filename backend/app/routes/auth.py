@@ -4,6 +4,7 @@ from jose import jwt
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import timedelta, datetime
+from utils.audit_logger import log_action
 from schemas.user import UserCreate , UserLogin
 from models.user import User 
 from database.pg_db import Base, engine
@@ -47,6 +48,15 @@ def register_user(user: UserCreate, db : Session =Depends(get_db)):
     new_user = User(name=user.name, email=user.email, hashed_password=pwd_context.hash(user.password))
     db.add(new_user)
     db.commit()
+    log_action(
+        db,
+        action="REGISTER",
+        entity="USER",
+        entity_id=new_user.id,
+        user_id=new_user.id,
+        message="User registered"
+    )
+
     db.refresh(new_user)
 
     return {"msg": "User registered successfully"}
@@ -70,6 +80,15 @@ def login_user(
 
     access_token = create_access_token(
         data={"sub": db_user.name}
+    )
+
+    log_action(
+        db,
+        action="LOGIN",
+        entity="USER",
+        entity_id=db_user.id,
+        user_id=db_user.id,
+        message="User logged in"
     )
 
     return {

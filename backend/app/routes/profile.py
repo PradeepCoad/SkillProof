@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from utils.audit_logger import log_action
 from database.pg_db import SessionLocal
 from models.user_profile import UserProfile
 from schemas.profile import ProfileCreateUpdate, ProfileResponse
@@ -45,5 +46,15 @@ def create_or_update_profile(
         db.add(profile)
     
     db.commit()
+    
+    log_action(
+        db,
+        action="UPDATE",
+        entity="PROFILE",
+        entity_id=current_user.id,
+        user_id=current_user.id,
+        message="User profile updated"
+    )
+
     db.refresh(profile)
     return profile
