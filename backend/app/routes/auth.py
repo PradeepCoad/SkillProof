@@ -37,7 +37,7 @@ def create_access_token(data : dict):
 
 
 @routes.post("/register")
-async def register_user(user: UserCreate, db : Session =Depends(get_db)):
+def register_user(user: UserCreate, db : Session =Depends(get_db)):
 
     existing_user = db.query(User).filter((User.email == user.email) | (User.name == user.name)).first()
 
@@ -51,18 +51,8 @@ async def register_user(user: UserCreate, db : Session =Depends(get_db)):
 
     return {"msg": "User registered successfully"}
 
-# @routes.post("/login")
-# async def login_user(user: UserLogin, db: Session = Depends(get_db)):
-#     db_user = db.query(User).filter((User.name == user.name)).first()
-
-#     if not db_user or not pwd_context.verify(user.password, db_user.hashed_password):
-#         raise HTTPException(status_code=400, detail="Invalid password")
-    
-#     token = create_access_token({"sub" : db_user.name})
-#     return {"access_token": token, "token_type": "bearer"}
-
 @routes.post("/login")
-async def login_user(
+def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
